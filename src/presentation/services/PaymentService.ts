@@ -1,159 +1,162 @@
-import { createAuthenticatedClient, isFinalizedGrant, type OutgoingPayment, type Quote, type WalletAddress } from "@interledger/open-payments";
+  import { createAuthenticatedClient, isFinalizedGrant, type OutgoingPayment, type Quote, type WalletAddress } from "@interledger/open-payments";
 
-type PaymentOptions = {
-    senderWalletUrl : string, 
-    receiverWalletUrl : string, 
-    amount : number
-}
-
-interface PaymentInitResult {
-  redirectUri: string;
-  continueUri: string;
-  continueAccessToken: string;
-  senderWallet: WalletAddress;
-  quote: Quote;
-};
-
-type PaymentInitResultWithoutRedirectUri = Omit<PaymentInitResult, "redirectUri">
-
-export interface IPaymentService {
-    doPayment( { senderWalletUrl, receiverWalletUrl, amount} : PaymentOptions ) : Promise<PaymentInitResult>
-
-    finalizePayment({ continueUri, continueAccessToken, senderWallet, quote }: PaymentInitResultWithoutRedirectUri): Promise<OutgoingPayment>
-    // doRecurrentPayment();
-
-}
-
-export class PaymentService implements IPaymentService {
-  private clientPromise;
-
-  constructor() {
-    this.clientPromise = createAuthenticatedClient({
-      walletAddressUrl: process.env.WALLET_URL!,
-      privateKey: process.env.SECRET_KEY!,
-      keyId: process.env.KEY_ID!,
-    });
+  type PaymentOptions = {
+      senderWalletUrl : string, 
+      receiverWalletUrl : string, 
+      amount : number
   }
 
-  
-  async doPayment({ senderWalletUrl, receiverWalletUrl, amount }: PaymentOptions): Promise<PaymentInitResult> {
-    const client = await this.clientPromise;
+  interface PaymentInitResult {
+    redirectUri: string;
+    continueUri: string;
+    continueAccessToken: string;
+    senderWallet: WalletAddress;
+    quote: Quote;
+  };
 
-    const senderWallet = await client.walletAddress.get({ url: senderWalletUrl });
-    const receiverWallet = await client.walletAddress.get({ url: receiverWalletUrl });
+  type PaymentInitResultWithoutRedirectUri = Omit<PaymentInitResult, "redirectUri">
 
-    
-    const incomingPaymentGrant = await client.grant.request(
-      { url: receiverWallet.authServer },
-      {
-        access_token: {
-          access: [{ type: "incoming-payment", actions: ["create"] }],
-        },
-      }
-    );
-    if (!isFinalizedGrant(incomingPaymentGrant)) {
-      throw new Error("Grant de incoming payment no finalizado");
+  export interface IPaymentService {
+      doPayment( { senderWalletUrl, receiverWalletUrl, amount} : PaymentOptions ) : Promise<PaymentInitResult>
+
+      finalizePayment({ continueUri, continueAccessToken, senderWallet, quote }: PaymentInitResultWithoutRedirectUri): Promise<OutgoingPayment>
+      // doRecurrentPayment();
+
+  }
+
+  export class PaymentService implements IPaymentService {
+    private clientPromise;
+
+    constructor() {
+      this.clientPromise = createAuthenticatedClient({
+        walletAddressUrl: process.env.WALLET_URL!,
+        privateKey: process.env.SECRET_KEY!,
+        keyId: process.env.KEY_ID!,
+      });
     }
 
     
-    const incomingPayment = await client.incomingPayment.create(
-      { url: receiverWallet.resourceServer, accessToken: incomingPaymentGrant.access_token.value },
-      {
-        walletAddress: receiverWallet.id,
-        incomingAmount: {
-          assetCode: receiverWallet.assetCode,
-          assetScale: receiverWallet.assetScale,
-          value: amount.toString(),
-        },
-      }
-    );
+    async doPayment({ senderWalletUrl, receiverWalletUrl, amount }: PaymentOptions): Promise<PaymentInitResult> {
+      const client = await this.clientPromise;
 
-    
-    const quoteGrant = await client.grant.request(
-      { url: senderWallet.authServer },
-      {
-        access_token: { access: [{ type: "quote", actions: ["create", "read"] }] },
-      }
-    );
-    if (!isFinalizedGrant(quoteGrant)) {
-      throw new Error("Grant de quote no finalizado");
-    }
+      const senderWallet = await client.walletAddress.get({ url: senderWalletUrl });
+      const receiverWallet = await client.walletAddress.get({ url: receiverWalletUrl });
 
-    
-    const quote = await client.quote.create(
-      { url: senderWallet.resourceServer, accessToken: quoteGrant.access_token.value },
-      {
-        walletAddress: senderWallet.id,
-        receiver: incomingPayment.id,
-        method: "ilp",
-      }
-    );
-
-    
-    const outgoingPaymentGrant = await client.grant.request(
-      { url: senderWallet.authServer },
-      {
-        access_token: {
-          access: [
-            {
-              type: "outgoing-payment",
-              actions: ["read", "create"],
-              limits: {
-                debitAmount: {
-                  assetCode: quote.debitAmount.assetCode,
-                  assetScale: quote.debitAmount.assetScale,
-                  value: quote.debitAmount.value,
-                },
-              },
-              identifier: senderWallet.id,
-            },
-          ],
-        },
-        interact: {
-          start: ["redirect"],
-          finish: {
-            method: "redirect",
-            uri: `${process.env.BACKEND_URL}/payment/callback`, // callback backend
-            nonce: crypto.randomUUID(),
+      
+      const incomingPaymentGrant = await client.grant.request(
+        { url: receiverWallet.authServer },
+        {
+          access_token: {
+            access: [{ type: "incoming-payment", actions: ["create"] }],
           },
-        },
+        }
+      );
+      if (!isFinalizedGrant(incomingPaymentGrant)) {
+        throw new Error("Grant de incoming payment no finalizado");
       }
-    );
 
-    return {
-      redirectUri: outgoingPaymentGrant.interact.redirect,
-      continueUri: outgoingPaymentGrant.continue.uri,
-      continueAccessToken: outgoingPaymentGrant.continue.access_token.value,
-      senderWallet,
-      quote,
-    };
-  }
+      
+      const incomingPayment = await client.incomingPayment.create(
+        { url: receiverWallet.resourceServer, accessToken: incomingPaymentGrant.access_token.value },
+        {
+          walletAddress: receiverWallet.id,
+          incomingAmount: {
+            assetCode: receiverWallet.assetCode,
+            assetScale: receiverWallet.assetScale,
+            value: amount.toString(),
+          },
+        }
+      );
 
-  async finalizePayment({ continueUri, continueAccessToken, senderWallet, quote }: PaymentInitResultWithoutRedirectUri): Promise<OutgoingPayment> {
-    const client = await this.clientPromise;
+      
+      const quoteGrant = await client.grant.request(
+        { url: senderWallet.authServer },
+        {
+          access_token: { access: [{ type: "quote", actions: ["create", "read"] }] },
+        }
+      );
+      if (!isFinalizedGrant(quoteGrant)) {
+        throw new Error("Grant de quote no finalizado");
+      }
 
-    
-    const finalizedOutgoingPaymentGrant = await client.grant.continue({
-      url: continueUri,
-      accessToken: continueAccessToken,
-    });
+      
+      const quote = await client.quote.create(
+        { url: senderWallet.resourceServer, accessToken: quoteGrant.access_token.value },
+        {
+          walletAddress: senderWallet.id,
+          receiver: incomingPayment.id,
+          method: "ilp",
+        }
+      );
 
-    if (!isFinalizedGrant(finalizedOutgoingPaymentGrant)) {
-      throw new Error("Grant de outgoing payment no finalizado");
+      
+      const outgoingPaymentGrant = await client.grant.request(
+        { url: senderWallet.authServer },
+        {
+          access_token: {
+            access: [
+              {
+                type: "outgoing-payment",
+                actions: ["read", "create"],
+                limits: {
+                  debitAmount: {
+                    assetCode: quote.debitAmount.assetCode,
+                    assetScale: quote.debitAmount.assetScale,
+                    value: quote.debitAmount.value,
+                  },
+                },
+                identifier: senderWallet.id,
+              },
+            ],
+          },
+          interact: {
+            start: ["redirect"],
+            finish: {
+              method: "redirect",
+              uri: `${process.env.PUBLIC_PATH}/payment/callback`, // callback backend
+              nonce: crypto.randomUUID(),
+            },
+          },
+        }
+      );
+
+      if (isFinalizedGrant(outgoingPaymentGrant))
+        throw new Error('Grant was finalized automatically without interaction.');
+
+      return {
+        redirectUri: outgoingPaymentGrant.interact.redirect,
+        continueUri: outgoingPaymentGrant.continue.uri,
+        continueAccessToken: outgoingPaymentGrant.continue.access_token.value,
+        senderWallet,
+        quote,
+      };
     }
 
-    
-    const outgoingPayment = await client.outgoingPayment.create(
-      {
-        url: senderWallet.resourceServer,
-        accessToken: finalizedOutgoingPaymentGrant.access_token.value,
-      },
-      {
-        walletAddress: senderWallet.id,
-        quoteId: quote.id,
-      }
-    );
+    async finalizePayment({ continueUri, continueAccessToken, senderWallet, quote }: PaymentInitResultWithoutRedirectUri): Promise<OutgoingPayment> {
+      const client = await this.clientPromise;
 
-    return outgoingPayment;
+      
+      const finalizedOutgoingPaymentGrant = await client.grant.continue({
+        url: continueUri,
+        accessToken: continueAccessToken,
+      });
+
+      if (!isFinalizedGrant(finalizedOutgoingPaymentGrant)) {
+        throw new Error("Grant de outgoing payment no finalizado");
+      }
+
+      
+      const outgoingPayment = await client.outgoingPayment.create(
+        {
+          url: senderWallet.resourceServer,
+          accessToken: finalizedOutgoingPaymentGrant.access_token.value,
+        },
+        {
+          walletAddress: senderWallet.id,
+          quoteId: quote.id,
+        }
+      );
+
+      return outgoingPayment;
+    }
   }
-}

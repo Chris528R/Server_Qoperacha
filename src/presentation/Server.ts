@@ -1,5 +1,6 @@
 import express from 'express'
 import { ENVS } from '../plugins/env.plugin.js'
+import { PaymentService } from './services/PaymentService.js';
 
 export class Server {
 
@@ -8,7 +9,7 @@ export class Server {
     start() {
         this.app.listen(ENVS.PORT, () => {
             console.log(`Server running on ${ENVS.PORT}`);
-            
+            const client: PaymentService = new PaymentService();
         })
     }
 }
