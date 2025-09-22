@@ -1,5 +1,6 @@
 import 'dotenv/config'
-import * as env from 'env-var'
+
+import env from 'env-var'
 
 export const ENVS = {
     // Server PORT and public data.

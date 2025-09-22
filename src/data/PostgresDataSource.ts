@@ -2,6 +2,9 @@ import "reflect-metadata"
 
 import { DataSource } from 'typeorm'
 import { ENVS } from "../plugins/env.plugin.js"
+import { Usuario } from "./models/Usuario.js"
+import { Fondo } from "./models/Fondo.js"
+import { Aportaciones } from "./models/Aportaciones.js"
 
 export const PostgresDataSource = new DataSource({
     
@@ -15,7 +18,7 @@ export const PostgresDataSource = new DataSource({
 
     synchronize: true,
     logging: true,
-    entities: [],
+    entities: [Usuario, Fondo, Aportaciones],
     subscribers: [],
     migrations: []
 
