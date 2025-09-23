@@ -21,11 +21,11 @@ export class FondoController {
     public getInfoFondo = async (req: Request, res: Response) => {
         try {
             await AuthService.auth(req)
-            const { id } = req.params
+            const { wallet_address } = req.body
             
             const fondo = await this.fondoRepository.findOne({
                 where: {
-                    wallet_address: id!
+                    wallet_address: wallet_address
                 },
                 relations: {
                     aportaciones: true

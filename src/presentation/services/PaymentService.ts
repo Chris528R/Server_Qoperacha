@@ -115,7 +115,7 @@ export class PaymentService implements IPaymentService {
           start: ["redirect"],
           finish: {
             method: "redirect",
-            uri: `${ENVS.HOST}/fondo?sender=${ senderWalletUrl }&id=${ id }`, // callback backend
+            uri: `${ENVS.HOST}/fondo/paymentComplete/${id}`, // callback backend
             nonce: crypto.randomUUID(),
           },
         },
