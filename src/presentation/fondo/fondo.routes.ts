@@ -14,10 +14,10 @@ export class FondoRoutes {
         router.get('/:id', fondoController.getInfoFondo)
 
         // Realizar una aportación al fondo. (Usuario logeado)
-        router.put('/:id', fondoController.donateToFondo)
+        router.post('/:id', fondoController.donateToFondo)
 
         // Actualizar DB
-        router.get('/paymentComplete', fondoController.updateDB)
+        router.get('/paymentComplete', fondoController.handlePaymentCallback)
 
 
         return router

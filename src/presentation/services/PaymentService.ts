@@ -5,7 +5,7 @@ type PaymentOptions = {
   senderWalletUrl: string,
   receiverWalletUrl: string,
   amount: number,
-  id: number
+  id: String
 }
 
 interface PaymentInitResult {
