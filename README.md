@@ -1,6 +1,7 @@
 # Qoperacha
 Qoperacha is a mobile application designed to simplify and digitize collective fundraising for groups and small businesses.
 
+- NOTA: La app se encuentra en la carpeta publica.
 ### ¿Cuál es el problema? / What is the problem?
 
 Los métodos tradicionales para gestionar pagos y recolectar dinero para actividades en grupo, como regalos, viajes o eventos, son a menudo procesos manuales, ineficientes e incómodos o riesgosos. Este proceso puede generar falta de transparencia y problemas sociales debido a la necesidad de recordatorios constantes y múltiples transferencias. Además, el comercio informal pierde muchas ventas al no poder aceptar pagos digitales, y las diferencias de divisas son un problema importante para ellos.
