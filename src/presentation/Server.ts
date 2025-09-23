@@ -30,7 +30,6 @@ export class Server {
         // * Server Listening
         this.app.listen(ENVS.PORT, () => { 
             console.log(`Server running on ${ENVS.PORT}`);
-            const client: PaymentService = new PaymentService(); 
         })
     }
 }

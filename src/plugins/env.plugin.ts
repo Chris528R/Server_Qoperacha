@@ -15,5 +15,6 @@ export const ENVS = {
     DB_NAME: env.get('DB_NAME').required().asString(),
 
     // Secret Key of Jsonwebtoken.
-    SECRET_KEY: env.get('SECRET_KEY').required().asString()
+    SECRET_KEY: env.get('SECRET_KEY').required().asString(),
+    HOST: env.get('HOST').required().asString()
 }
