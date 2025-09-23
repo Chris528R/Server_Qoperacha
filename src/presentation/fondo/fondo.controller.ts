@@ -31,8 +31,17 @@ export class FondoController {
                     aportaciones: true
                 }
             });
+            if (!fondo) {
+                return res.status(404).json({ message: 'Fondo no encontrado' });
+            }
 
-            return res.status(200).json(fondo);
+            const fondoResponse = {
+                ...fondo,
+                amount: fondo.amount / 100,
+                amount_to_be_raised: fondo.amount_to_be_raised / 100
+            };
+
+            return res.status(200).json(fondoResponse);
         }
         catch(err) {
             console.error(err);
@@ -51,8 +60,8 @@ export class FondoController {
             fondo.wallet_address = usuario?.wallet_address as string
             fondo.title = title
             fondo.description = description
-            fondo.amount = amount
-            fondo.amount_to_be_raised = amount_to_be_raised
+            fondo.amount = amount * 100
+            fondo.amount_to_be_raised = amount_to_be_raised * 100
             fondo.creador = usuario!
             fondo.image = ""
 
@@ -78,7 +87,7 @@ export class FondoController {
             if(!usuario) return res.status(404).json({ message: "Usuario no encontrado" })
 
             const aportacion = this.aportacionRepository.create({
-                monto: amount,
+                monto: amount * 100,
                 usuario: usuario,
                 fondo: fondo,
                 estado: PaymentState.PENDIENTE
@@ -90,7 +99,7 @@ export class FondoController {
             const result = await this.paymentService.doPayment({
                 senderWalletUrl: usuario.wallet_address, 
                 receiverWalletUrl,
-                amount,
+                amount: amount * 100,
                 id: paymentId.toString()
             });
 
@@ -138,6 +147,13 @@ export class FondoController {
 
             aportacion.estado = PaymentState.PAGADO;
             await this.aportacionRepository.save(aportacion);
+
+            const fondoParaActualizar = aportacion.fondo
+            
+            
+            fondoParaActualizar.amount = Number(fondoParaActualizar.amount) + aportacion.monto
+
+            await this.fondoRepository.save(fondoParaActualizar)
 
             return res.status(200).redirect(`qoperachar://payment/complete?status=success&paymentId=${paymentId}`);
         }
