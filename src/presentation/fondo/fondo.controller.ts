@@ -45,10 +45,10 @@ export class FondoController {
             const email = await AuthService.auth(req)
             const usuario = await this.userRepository.findOneBy({ email: email })
 
-            const { wallet_address, title, description, amount, amount_to_be_raised } = req.body
+            const { title, description, amount, amount_to_be_raised } = req.body
             const fondo = new Fondo()
 
-            fondo.wallet_address = wallet_address
+            fondo.wallet_address = usuario?.wallet_address as string
             fondo.title = title
             fondo.description = description
             fondo.amount = amount
@@ -58,7 +58,7 @@ export class FondoController {
 
             this.fondoRepository.save(fondo)
             
-            return res.status(201).json({ message: 'Fondo Creado', wallet_address })
+            return res.status(201).json({ message: 'Fondo Creado', wallet_address: fondo.wallet_address });
         }
         catch(err) {
             console.error(err);

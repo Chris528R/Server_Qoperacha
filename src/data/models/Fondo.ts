@@ -1,11 +1,14 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn, type Relation } from "typeorm"
+import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn, type Relation } from "typeorm"
 import { Usuario } from "./Usuario.js"
 import { Aportaciones } from "./Aportaciones.js"
 
 @Entity()
 export class Fondo {
 
-    @PrimaryColumn("varchar")
+    @PrimaryGeneratedColumn()
+    id : number
+
+    @Column("varchar")
     wallet_address : string
 
     @Column("varchar")
