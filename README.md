@@ -1,4 +1,4 @@
-Qoperacha
+# Qoperacha
 Qoperacha is a mobile application designed to simplify and digitize collective fundraising for groups and small businesses.
 
 ### ¿Cuál es el problema? / What is the problem?
