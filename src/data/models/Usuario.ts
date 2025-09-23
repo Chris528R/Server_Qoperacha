@@ -20,6 +20,6 @@ export class Usuario {
     @OneToMany( () => Fondo, fondo => fondo.creador, { cascade: true })
     fondos_creados : Relation<Fondo[]>
 
-    @OneToMany( () => Aportaciones, aportaciones => aportaciones.aportacion, { cascade: true })
+    @OneToMany( () => Aportaciones, aportaciones => aportaciones.usuario, { cascade: true })
     aportaciones : Relation<Aportaciones[]>
 }

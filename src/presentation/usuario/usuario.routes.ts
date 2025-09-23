@@ -7,12 +7,12 @@ export class UserRoutes {
         const userController = new UsuarioController()
 
         // Get personal Info
-        router.get('/', userController.getPersonalInfo)
+        router.get('/',         userController.getPersonalInfo)
         // Register user
-        router.post('/', userController.registerUser)
+        router.post('/',        userController.registerUser)
 
         // Login user
-        router.post("/auth", userController.loginUser)
+        router.post("/auth",    userController.loginUser)
 
         return router
     }
